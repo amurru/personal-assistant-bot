@@ -1,4 +1,4 @@
-module gitlab.com/amurru/personal-assistant-bot
+module github.com/amurru/personal-assistant-bot
 
 go 1.24.3
 
