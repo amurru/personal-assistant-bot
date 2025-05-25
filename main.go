@@ -26,8 +26,19 @@ func main() {
 	defer cancel()
 
 	opts := []bot.Option{
-		bot.WithDebug(),
 		bot.WithMessageTextHandler("/start", bot.MatchTypeExact, startHandler),
+	}
+
+	// check if debug mode
+	debug := os.Getenv("BOT_DEBUG")
+	if debug == "true" {
+		opts = append(opts, bot.WithDebug())
+	}
+
+	// custom bot API server
+	serverURL := os.Getenv("BOT_API_SERVER")
+	if serverURL != "" {
+		opts = append(opts, bot.WithServerURL(serverURL))
 	}
 
 	var b *bot.Bot
@@ -44,6 +55,7 @@ func main() {
 				log.Fatal("Could not connect to Telegram")
 			}
 		} else {
+			log.Println("Bot Launched")
 			break
 		}
 	}
