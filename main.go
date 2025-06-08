@@ -115,9 +115,29 @@ func requestHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 }
 
 func weatherHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+
+	// get user location and preferences from database
+	// but for now, just use New York, US, lang, imperial
+	w := GetWeatherInfo("New York", "US", "imperial")
+
+	weathernReport := fmt.Sprintf(
+		"Temperature: %s\nFeels Like: %s\nUV Index: %s\nWind: %s\nPrecipitation: %s\nHumidity: %s\nPressure: %s\nClouds: %s\nVisibility: %s\nCity: %s\nCountry: %s\nUnits: %s",
+		w.Temp,
+		w.FeelsLike,
+		w.UVIndex,
+		w.Wind,
+		w.Precipitation,
+		w.Humidity,
+		w.Pressure,
+		w.Clouds,
+		w.Visibility,
+		w.City,
+		w.Country,
+		w.Units,
+	)
 	b.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: update.Message.Chat.ID,
-		Text:   "Weather",
+		Text:   weathernReport,
 	})
 }
 
