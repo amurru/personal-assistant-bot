@@ -11,6 +11,14 @@ func TestGetWeatherInfo(t *testing.T) {
 		"metric",
 	)
 	if result == nil {
-		t.Error("WeatherInfo is nil")
+		t.Fatal("WeatherInfo is nil")
+	}
+
+	if result.City != "Jableh" {
+		t.Errorf("Expected city Jableh, but got %s", result.City)
+	}
+
+	if result.Country != "Syria" {
+		t.Errorf("Expected country Syria, but got %s", result.Country)
 	}
 }
