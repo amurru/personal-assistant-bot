@@ -25,8 +25,26 @@ func main() {
 	)
 	defer cancel()
 
+	/*
+		Commands:
+		start - Start Interacting with Bot
+		brief - Show a summary of upcoming activities
+		remind - Add New Reminder
+		weather - Query Weather Forecast
+		calendar - Manage Calendar
+		notes - Manage Personal Notes
+		request - Request New Features
+		help - Show Help Info
+	*/
 	opts := []bot.Option{
 		bot.WithMessageTextHandler("/start", bot.MatchTypeExact, startHandler),
+		bot.WithMessageTextHandler("/help", bot.MatchTypeExact, helpHandler),
+		bot.WithMessageTextHandler("/calendar", bot.MatchTypeExact, calendarHandler),
+		bot.WithMessageTextHandler("/remind", bot.MatchTypeExact, remindHandler),
+		bot.WithMessageTextHandler("/request", bot.MatchTypeExact, requestHandler),
+		bot.WithMessageTextHandler("/weather", bot.MatchTypeExact, weatherHandler),
+		bot.WithMessageTextHandler("/notes", bot.MatchTypeExact, notesHandler),
+		bot.WithMessageTextHandler("/brief", bot.MatchTypeExact, briefHandler),
 	}
 
 	// check if debug mode
@@ -67,5 +85,52 @@ func startHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	b.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: update.Message.Chat.ID,
 		Text:   "Hello World!",
+	})
+}
+
+func helpHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: update.Message.Chat.ID,
+		Text:   "Help Text",
+	})
+}
+func calendarHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: update.Message.Chat.ID,
+		Text:   "Calendar",
+	})
+}
+func remindHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: update.Message.Chat.ID,
+		Text:   "Reminder",
+	})
+}
+
+func requestHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: update.Message.Chat.ID,
+		Text:   "Request",
+	})
+}
+
+func weatherHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: update.Message.Chat.ID,
+		Text:   "Weather",
+	})
+}
+
+func notesHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: update.Message.Chat.ID,
+		Text:   "Notes",
+	})
+}
+
+func briefHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: update.Message.Chat.ID,
+		Text:   "Brief",
 	})
 }
