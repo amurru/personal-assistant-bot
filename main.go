@@ -45,6 +45,7 @@ func main() {
 		bot.WithMessageTextHandler("/weather", bot.MatchTypeExact, weatherHandler),
 		bot.WithMessageTextHandler("/notes", bot.MatchTypeExact, notesHandler),
 		bot.WithMessageTextHandler("/brief", bot.MatchTypeExact, briefHandler),
+		bot.WithMessageTextHandler("/inspire", bot.MatchTypeExact, inspireHandler),
 	}
 
 	// check if debug mode
@@ -152,5 +153,23 @@ func briefHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	b.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: update.Message.Chat.ID,
 		Text:   "Brief",
+	})
+}
+
+func inspireHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	quote := GetQuote("en")
+	if quote == nil {
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   "Error Getting Quote",
+		})
+		return
+	}
+	quoteText := fmt.Sprintf("*🙶%s🙸*\n—%s", quote.Text, quote.Author)
+
+	b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID:    update.Message.Chat.ID,
+		Text:      quoteText,
+		ParseMode: models.ParseModeMarkdownV1,
 	})
 }

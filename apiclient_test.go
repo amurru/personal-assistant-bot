@@ -22,3 +22,18 @@ func TestGetWeatherInfo(t *testing.T) {
 		t.Errorf("Expected country Syria, but got %s", result.Country)
 	}
 }
+
+func TestGetQuote(t *testing.T) {
+	quote := GetQuote("en")
+	if quote == nil {
+		t.Fatal("Quote is nil")
+	}
+
+	if quote.Text == "" {
+		t.Errorf("Quote text should not be empty")
+	}
+
+	if quote.Author == "" {
+		t.Errorf("Quote author should not be empty")
+	}
+}

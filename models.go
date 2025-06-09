@@ -31,3 +31,12 @@ type WeatherInfo struct {
 	Country            string `json:"country"`
 	Units              string `json:"units"`
 }
+
+// Quote represents inspirational quote information
+type Quote struct {
+	Text     string `json:"text"`
+	Author   string `json:"author"`
+	Source   string `json:"source"`
+	URL      string `json:"url"`
+	Language string `json:"lang"`
+}

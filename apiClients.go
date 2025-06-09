@@ -94,3 +94,40 @@ func GetWeatherInfo(city, country, units string) *WeatherInfo {
 
 	return &weatherInfo
 }
+
+// GetQuote gives a random inspirational quote in the given language
+func GetQuote(lang string) *Quote {
+	url := "https://thequoteshub.com/api/"
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil
+	}
+	req.Header.Set("Content-Type", "application/json")
+	client := http.Client{
+		Timeout: 30 * time.Second,
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		return nil
+	}
+	// Unmarshal response body to anonymous struct
+	resBody, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil
+	}
+	var quoteData struct {
+		Text   string `json:"text"`
+		Author string `json:"author"`
+	}
+
+	json.Unmarshal(resBody, &quoteData)
+
+	// For now, just return English quote
+	_ = lang
+	return &Quote{
+		Text:     quoteData.Text,
+		Author:   quoteData.Author,
+		Source:   "The Quote Hub",
+		Language: "en",
+	}
+}
