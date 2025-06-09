@@ -15,6 +15,14 @@ type User struct {
 	JoinedAt time.Time `json:"joined_at"`
 }
 
+// Note represents personal note information
+type Note struct {
+	ID        int       `json:"id"`
+	Text      string    `json:"text"`
+	Owner     int64     `json:"user_id"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 // WeatherInfo represents weather forecast information
 type WeatherInfo struct {
 	Temp               string `json:"temp"`

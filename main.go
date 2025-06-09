@@ -2,20 +2,31 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 
 	_ "github.com/dotenv-org/godotenvvault/autoload"
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
+	"github.com/supabase-community/supabase-go"
 )
+
+var client *supabase.Client
 
 func main() {
 	tgToken := os.Getenv("TELEGRAM_BOT_TOKEN")
 	if tgToken == "" {
 		fmt.Println("TELEGRAM_BOT_TOKEN is not set")
+		os.Exit(1)
+	}
+	API_URL := os.Getenv("SUPABASE_URL")
+	API_KEY := os.Getenv("SUPABASE_KEY")
+	if API_URL == "" || API_KEY == "" {
+		fmt.Println("SUPABASE_URL or SUPABASE_KEY is not set")
 		os.Exit(1)
 	}
 
@@ -33,6 +44,7 @@ func main() {
 		weather - Query Weather Forecast
 		calendar - Manage Calendar
 		notes - Manage Personal Notes
+		inspire - Get Inspirational Quote
 		request - Request New Features
 		help - Show Help Info
 	*/
@@ -79,14 +91,51 @@ func main() {
 		}
 	}
 
+	// prepare database
+	client, err = supabase.NewClient(API_URL, API_KEY, &supabase.ClientOptions{})
+	if err != nil {
+		log.Fatalf("Error init DB: %v", err)
+	}
+
 	b.Start(ctx)
 }
 
 func startHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
-	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: update.Message.Chat.ID,
-		Text:   "Hello World!",
-	})
+	// check if user is already registered
+	telegramID := strconv.FormatInt(update.Message.Chat.ID, 10)
+	result, count, err := client.From("users").
+		Select("*", "exact", false).
+		Eq("id", telegramID).
+		Execute()
+	if err != nil {
+		log.Printf("Error checking user: %v", err)
+		return
+	}
+	fmt.Printf("Loaded %d users\n", count)
+	fmt.Printf("User: %s", result)
+	if count == 0 {
+		// Register user
+		// 1. Survey user information and explain how they are used
+		// i.e city, country, for weather (optional). units (default is metric = m)
+		// 2. Ask user to confirm
+		// 3. Register user in DB
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   "Hello World!",
+		})
+	} else {
+		var users []User
+		err = json.Unmarshal(result, &users)
+		if err != nil {
+			log.Printf("Error unmarshalling user: %v", err)
+			return
+		}
+		welcomeMessage := fmt.Sprintf("Hello %s, welcome back!", users[0].Name)
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   welcomeMessage,
+		})
+	}
 }
 
 func helpHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
