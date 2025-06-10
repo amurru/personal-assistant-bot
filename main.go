@@ -52,6 +52,8 @@ func main() {
 		bot.WithMessageTextHandler("/notes", bot.MatchTypeExact, notesHandler),
 		bot.WithMessageTextHandler("/brief", bot.MatchTypeExact, briefHandler),
 		bot.WithMessageTextHandler("/inspire", bot.MatchTypeExact, inspireHandler),
+		// call-back handlers
+		bot.WithCallbackQueryDataHandler("save_to_notes", bot.MatchTypeExact, saveToNotesHandler),
 	}
 
 	// check if debug mode
@@ -224,8 +226,9 @@ func inspireHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	quoteText := fmt.Sprintf("*🙶%s🙸*\n—%s", quote.Text, quote.Author)
 
 	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID:    update.Message.Chat.ID,
-		Text:      quoteText,
-		ParseMode: models.ParseModeMarkdownV1,
+		ChatID:      update.Message.Chat.ID,
+		Text:        quoteText,
+		ParseMode:   models.ParseModeMarkdownV1,
+		ReplyMarkup: SaveToNotesButton(),
 	})
 }

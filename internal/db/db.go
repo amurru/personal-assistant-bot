@@ -28,7 +28,7 @@ type Persistence interface {
 	// GetUserNotes returns a slice of all user's notes
 	GetUserNotes(user User) ([]Note, error)
 	// AddNote adds a new note to user's notes
-	AddNote(user User, note Note) error
+	AddNote(note Note) error
 	// UpdateNote updates note content
 	UpdateNote(note Note) error
 	// DeleteNote deletes a note

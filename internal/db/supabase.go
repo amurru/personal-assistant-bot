@@ -114,7 +114,15 @@ func (s *Supabase) GetUserNotes(user User) ([]Note, error) {
 	return []Note{}, nil
 }
 
-func (s *Supabase) AddNote(user User, note Note) error {
+func (s *Supabase) AddNote(note Note) error {
+	_, count, err := s.client.From("user_notes").
+		Insert(note, false, "", "", "exact").
+		Execute()
+	if err != nil {
+		log.Printf("AddNote error: %v", err)
+		return err
+	}
+	log.Printf("Added %d note to system", count)
 	return nil
 }
 

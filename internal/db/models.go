@@ -17,10 +17,10 @@ type User struct {
 
 // Note represents personal note information
 type Note struct {
-	ID        int       `json:"id"`
+	ID        int       `json:"id,omitempty"`
 	Text      string    `json:"text"`
 	Owner     int64     `json:"user_id"`
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
 }
 
 // WeatherInfo represents weather forecast information
