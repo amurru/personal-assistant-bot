@@ -6,11 +6,13 @@ import (
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/amurru/personal-assistant-bot/internal/db"
 )
 
 // GetWeatherInfo returns a pointer to a WeatherInfo struct
 // with weather information for the given city and country.
-func GetWeatherInfo(city, country, units string) *WeatherInfo {
+func GetWeatherInfo(city, country, units string) *db.WeatherInfo {
 	url := fmt.Sprintf(
 		"https://wttr.in/%s-%s?format=j1",
 		country,
@@ -58,7 +60,7 @@ func GetWeatherInfo(city, country, units string) *WeatherInfo {
 	}
 	json.Unmarshal(resBody, &weatherData)
 	// Populate weatherInfo struct based on units
-	var weatherInfo WeatherInfo
+	var weatherInfo db.WeatherInfo
 	if units == "imperial" {
 		weatherInfo.Temp = weatherData.CurrentCondition[0].TempF
 		weatherInfo.FeelsLike = weatherData.CurrentCondition[0].FeelsLikeF
@@ -96,7 +98,7 @@ func GetWeatherInfo(city, country, units string) *WeatherInfo {
 }
 
 // GetQuote gives a random inspirational quote in the given language
-func GetQuote(lang string) *Quote {
+func GetQuote(lang string) *db.Quote {
 	url := "https://thequoteshub.com/api/"
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -124,7 +126,7 @@ func GetQuote(lang string) *Quote {
 
 	// For now, just return English quote
 	_ = lang
-	return &Quote{
+	return &db.Quote{
 		Text:     quoteData.Text,
 		Author:   quoteData.Author,
 		Source:   "The Quote Hub",
