@@ -201,9 +201,21 @@ func weatherHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 }
 
 func notesHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	notes, err := pers.GetUserNotes(update.Message.From.ID)
+	if err != nil {
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   "Error occured. Contact developer!",
+		})
+		return
+	}
+	var notesText string
+	for i, note := range notes {
+		notesText += fmt.Sprintf("%d. %s\n\n", i+1, note.Text)
+	}
 	b.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: update.Message.Chat.ID,
-		Text:   "Notes",
+		Text:   "Your Notes:\n-------------\n\n" + notesText,
 	})
 }
 
