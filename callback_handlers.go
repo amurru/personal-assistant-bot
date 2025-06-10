@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"time"
 
 	"github.com/amurru/personal-assistant-bot/internal/db"
 	"github.com/go-telegram/bot"
@@ -15,8 +16,9 @@ func saveToNotesHandler(ctx context.Context, b *bot.Bot, update *models.Update) 
 	})
 	owner, err := pers.GetUser(update.CallbackQuery.From.ID)
 	note := db.Note{
-		Text:  update.CallbackQuery.Message.Message.Text,
-		Owner: owner.ID,
+		Text:      update.CallbackQuery.Message.Message.Text,
+		Owner:     owner.ID,
+		CreatedAt: time.Now(),
 	}
 	if err != nil {
 		b.SendMessage(ctx, &bot.SendMessageParams{

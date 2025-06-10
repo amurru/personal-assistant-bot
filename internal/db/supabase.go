@@ -125,6 +125,7 @@ func (s *Supabase) GetUserNotes(userID int64) ([]Note, error) {
 	result, _, err := s.client.From("user_notes").
 		Select("*", "exact", false).
 		Eq("user_id", strconv.FormatInt(userID, 10)).
+		Order("created_at", nil).
 		Execute()
 	if err != nil {
 		log.Printf("GetUserNotes error: %v", err)

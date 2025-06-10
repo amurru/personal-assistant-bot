@@ -20,7 +20,7 @@ type Note struct {
 	ID        int       `json:"id,omitempty"`
 	Text      string    `json:"text"`
 	Owner     int64     `json:"user_id"`
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 // WeatherInfo represents weather forecast information
