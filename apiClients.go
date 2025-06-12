@@ -62,7 +62,7 @@ func GetWeatherInfo(city, country, units string) *db.WeatherInfo {
 	json.Unmarshal(resBody, &weatherData)
 	// Populate weatherInfo struct based on units
 	var weatherInfo db.WeatherInfo
-	if units == "imperial" {
+	if units == "imperial" || units == "i" {
 		weatherInfo.Temp = weatherData.CurrentCondition[0].TempF
 		weatherInfo.FeelsLike = weatherData.CurrentCondition[0].FeelsLikeF
 		weatherInfo.UVIndex = weatherData.CurrentCondition[0].UvIndex
@@ -76,7 +76,7 @@ func GetWeatherInfo(city, country, units string) *db.WeatherInfo {
 		weatherInfo.Pressure = weatherData.CurrentCondition[0].PressureInches
 		weatherInfo.Clouds = weatherData.CurrentCondition[0].Clouds
 		weatherInfo.Visibility = weatherData.CurrentCondition[0].VisibilityMiles
-	} else if units == "metric" {
+	} else if units == "metric" || units == "m" {
 		weatherInfo.Temp = weatherData.CurrentCondition[0].TempC
 		weatherInfo.FeelsLike = weatherData.CurrentCondition[0].FeelsLikeC
 		weatherInfo.UVIndex = weatherData.CurrentCondition[0].UvIndex

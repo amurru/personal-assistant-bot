@@ -31,7 +31,7 @@ func RequestLocation(messageID int) models.InlineKeyboardMarkup {
 		{
 			{
 				Text:         "📍 Share Location",
-				CallbackData: fmt.Sprintf("share_location_%d", messageID),
+				CallbackData: fmt.Sprintf("share_location:%d", messageID),
 			},
 		},
 		{

@@ -59,7 +59,7 @@ func main() {
 		// call-back handlers
 		bot.WithCallbackQueryDataHandler("save_to_notes", bot.MatchTypeExact, saveToNotesHandler),
 		bot.WithCallbackQueryDataHandler(
-			"share_location_",
+			"share_location:",
 			bot.MatchTypePrefix,
 			shareLocationHandler,
 		),
@@ -123,7 +123,6 @@ func startHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 			update.Message.From.LastName,
 		)
 		user.Language = update.Message.From.LanguageCode
-		user.Units = "m"
 		user.JoinedAt = time.Now()
 		b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
@@ -336,9 +335,9 @@ func locationHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 			userStates[user.ID].ActiveCommand = "waiting_for_units"
 		case "waiting_for_units":
 			if update.Message.Text == "Metric (Celsius)" {
-				user.Units = "m"
+				user.Units = "metric"
 			} else if update.Message.Text == "Imperial (Fahrenheit)" {
-				user.Units = "i"
+				user.Units = "imperial"
 			} else {
 				b.SendMessage(ctx, &bot.SendMessageParams{
 					ChatID: update.CallbackQuery.Message.Message.Chat.ID,

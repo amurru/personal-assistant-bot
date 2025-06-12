@@ -45,9 +45,9 @@ func shareLocationHandler(ctx context.Context, b *bot.Bot, update *models.Update
 		ChatID: update.CallbackQuery.Message.Message.Chat.ID,
 		Text:   "Please send me your location from the pin menu",
 	})
-	// Extract previous message id from share_location_ID to use as reference
+	// Extract previous message id from share_location:ID to use as reference
 	previousMessageID, err := strconv.Atoi(
-		strings.Split(update.CallbackQuery.Data, "_")[2], // share_location_msgid
+		strings.Split(update.CallbackQuery.Data, ":")[1], // share_location:msgid
 	)
 	if err != nil {
 		b.SendMessage(ctx, &bot.SendMessageParams{
