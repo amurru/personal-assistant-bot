@@ -48,3 +48,19 @@ type Quote struct {
 	URL      string `json:"url"`
 	Language string `json:"lang"`
 }
+
+// LocationInfo represents location information
+type LocationInfo struct {
+	Country string `json:"country,omitempty"`
+	City    string `json:"city,omitempty"`
+	State   string `json:"state,omitempty"`
+	Zip     string `json:"zip,omitempty"`
+	Lat     string `json:"lat,omitempty"`
+	Lon     string `json:"lon,omitempty"`
+}
+
+// UserStateInfo represents user state information
+type UserStateInfo struct {
+	ActiveCommand     string
+	PreviousMessageID int
+}

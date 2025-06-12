@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/amurru/personal-assistant-bot/internal/db"
@@ -32,4 +34,32 @@ func saveToNotesHandler(ctx context.Context, b *bot.Bot, update *models.Update) 
 		ChatID: update.CallbackQuery.Message.Message.Chat.ID,
 		Text:   "Saved! Check with /notes",
 	})
+}
+
+func shareLocationHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
+		CallbackQueryID: update.CallbackQuery.ID,
+		ShowAlert:       false,
+	})
+	b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: update.CallbackQuery.Message.Message.Chat.ID,
+		Text:   "Please send me your location from the pin menu",
+	})
+	// Extract previous message id from share_location_ID to use as reference
+	previousMessageID, err := strconv.Atoi(
+		strings.Split(update.CallbackQuery.Data, "_")[2], // share_location_msgid
+	)
+	if err != nil {
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.CallbackQuery.Message.Message.Chat.ID,
+			Text:   "Error occured. Contact developer!",
+		})
+		return
+	}
+	// Create user state record if not exists
+	if _, ok := userStates[update.CallbackQuery.From.ID]; !ok {
+		userStates[update.CallbackQuery.From.ID] = &db.UserStateInfo{}
+	}
+	userStates[update.CallbackQuery.From.ID].PreviousMessageID = previousMessageID
+	userStates[update.CallbackQuery.From.ID].ActiveCommand = "waiting_for_location"
 }

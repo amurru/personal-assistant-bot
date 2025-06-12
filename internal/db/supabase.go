@@ -112,6 +112,15 @@ func (s *Supabase) AddUser(user User) error {
 
 // UpdateUser updates user information in system
 func (s *Supabase) UpdateUser(user User) error {
+	_, count, err := s.client.From("users").
+		Update(user, "", "exact").
+		Eq("id", strconv.FormatInt(user.ID, 10)).
+		Execute()
+	if err != nil {
+		log.Printf("UpdateUser error: %v", err)
+		return err
+	}
+	log.Printf("Updated %d user in system", count)
 	return nil
 }
 

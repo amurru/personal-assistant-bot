@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/amurru/personal-assistant-bot/internal/db"
@@ -30,12 +31,12 @@ func GetWeatherInfo(city, country, units string) *db.WeatherInfo {
 	if err != nil {
 		return nil
 	}
-	// unmarshal response body to anonymous struct
+	// Unmarshal response body to anonymous struct
 	resBody, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil
 	}
-	// define in-line struct for unmarshalling
+	// Define in-line struct for unmarshalling
 	var weatherData struct {
 		CurrentCondition []struct {
 			FeelsLikeC      string `json:"FeelsLikeC"`
@@ -132,4 +133,53 @@ func GetQuote(lang string) *db.Quote {
 		Source:   "The Quote Hub",
 		Language: "en",
 	}
+}
+
+// GetLocationInformation performs a reverse geocoding request to get location information
+func GetLocationInformation(latitude, longitude float64) (*db.LocationInfo, error) {
+	url := fmt.Sprintf(
+		"https://api.geoapify.com/v1/geocode/reverse?api_key=%s&lat=%f&lon=%f",
+		os.Getenv("GEOAPIFY_API_KEY"),
+		latitude,
+		longitude,
+	)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	client := http.Client{
+		Timeout: 30 * time.Second,
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	// Unmarshal response body to anonymous struct
+	resBody, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+	// Define in-line struct for unmarshalling
+	var locationData struct {
+		Features []struct {
+			Properties struct {
+				Country string `json:"country"`
+				City    string `json:"city"`
+				State   string `json:"state"`
+				Zip     string `json:"zip"`
+				Lat     string `json:"lat"`
+				Lon     string `json:"lon"`
+			} `json:"properties"`
+		} `json:"features"`
+	}
+	json.Unmarshal(resBody, &locationData)
+	return &db.LocationInfo{
+		Country: locationData.Features[0].Properties.Country,
+		City:    locationData.Features[0].Properties.City,
+		State:   locationData.Features[0].Properties.State,
+		Zip:     locationData.Features[0].Properties.Zip,
+		Lat:     locationData.Features[0].Properties.Lat,
+		Lon:     locationData.Features[0].Properties.Lon,
+	}, nil
 }
