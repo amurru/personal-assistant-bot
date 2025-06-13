@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"time"
 
@@ -471,7 +472,7 @@ func weatherHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 
 	weathernReport := fmt.Sprintf(`
 🌡️ *Temperature:* %s %s
-😎 *Feels Like:* %s %s
+%s *Feels Like:* %s %s
 ☀️ *UV Index:* %s
 🌬️ *Wind:* %s %s
 🌧️ *Precipitation:* %s %s
@@ -488,6 +489,32 @@ func weatherHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 				return "°C"
 			}
 			return "°F"
+		}(),
+		func() string {
+			temp, _ := strconv.ParseFloat(w.FeelsLike, 64)
+			if w.Units == "metric" {
+				switch {
+				case temp < 0:
+					return "❄️"
+				case temp < 15:
+					return "🧥"
+				case temp < 30:
+					return "😎"
+				default:
+					return "🔥"
+				}
+			} else {
+				switch {
+				case temp < 32:
+					return "❄️"
+				case temp < 59:
+					return "🧥"
+				case temp < 86:
+					return "😎"
+				default:
+					return "🔥"
+				}
+			}
 		}(),
 		w.FeelsLike,
 		func() string {
