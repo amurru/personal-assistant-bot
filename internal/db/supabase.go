@@ -164,6 +164,14 @@ func (s *Supabase) AddNote(note Note) error {
 
 // UpdateNote updates note content
 func (s *Supabase) UpdateNote(note Note) error {
+	_, _, err := s.client.From("user_notes").
+		Update(note, "", "exact").
+		Eq("id", strconv.Itoa(note.ID)).
+		Execute()
+	if err != nil {
+		log.Printf("UpdateNote error: %v", err)
+		return err
+	}
 	return nil
 }
 

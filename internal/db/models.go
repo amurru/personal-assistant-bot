@@ -61,6 +61,7 @@ type LocationInfo struct {
 
 // UserStateInfo represents user state information
 type UserStateInfo struct {
-	ActiveCommand     string
-	PreviousMessageID int
+	ActiveCommand   string
+	// can be previous message id, or something to edit ...etc
+	CommandArgument any
 }
