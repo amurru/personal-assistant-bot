@@ -44,6 +44,7 @@ func main() {
 		calendar - Manage Calendar
 		notes - Manage Personal Notes
 		inspire - Get Inspirational Quote
+		profile - Manage Profile Information
 		request - Request New Features
 		help - Show Help Info
 	*/
@@ -57,6 +58,7 @@ func main() {
 		bot.WithMessageTextHandler("/notes", bot.MatchTypeExact, notesHandler),
 		bot.WithMessageTextHandler("/brief", bot.MatchTypeExact, briefHandler),
 		bot.WithMessageTextHandler("/inspire", bot.MatchTypeExact, inspireHandler),
+		bot.WithMessageTextHandler("/profile", bot.MatchTypeExact, profileHandler),
 		// call-back handlers
 		bot.WithCallbackQueryDataHandler("save_to_notes", bot.MatchTypeExact, saveToNotesHandler),
 		bot.WithCallbackQueryDataHandler(
@@ -320,7 +322,7 @@ func defaultHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		// prompt user for new text
 		b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
-			Text:   fmt.Sprintf("Please enter new note text for note #%s:",update.Message.Text),
+			Text:   fmt.Sprintf("Please enter new note text for note #%s:", update.Message.Text),
 		})
 
 		// update user state
@@ -328,7 +330,7 @@ func defaultHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		userStates[user.ID].CommandArgument = notes[targetId].ID
 
 	case "waiting_for_note_edit_text":
-		note:= db.Note{
+		note := db.Note{
 			ID:        userStates[user.ID].CommandArgument.(int),
 			Text:      update.Message.Text,
 			Owner:     user.ID,
@@ -727,5 +729,40 @@ func inspireHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		Text:        quoteText,
 		ParseMode:   models.ParseModeMarkdownV1,
 		ReplyMarkup: SaveToNotesButton(),
+	})
+}
+
+func profileHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	user, err := pers.GetUser(update.Message.From.ID)
+	if err != nil {
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   "Error occured. Contact developer!",
+		})
+		return
+	}
+	profileReport := fmt.Sprintf(`
+	🧾 *Your Profile* 
+	Name: *%s*
+	Phone: *%s*
+	Language: *%s*
+	City: *%s*
+	Country: *%s*
+	Units: *%s*
+	Joined At: *%s*
+	`,
+		user.Name,
+		user.Phone,
+		user.Language,
+		user.City,
+		user.Country,
+		user.Units,
+		user.JoinedAt,
+	)
+	b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID:      update.Message.Chat.ID,
+		Text:        profileReport,
+		ReplyMarkup: ProfileActionButtons(),
+		ParseMode:   models.ParseModeMarkdownV1,
 	})
 }

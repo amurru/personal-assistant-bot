@@ -71,3 +71,37 @@ func NotesActionButtons() models.InlineKeyboardMarkup {
 
 	return *kb
 }
+
+func ProfileActionButtons() models.InlineKeyboardMarkup {
+	btns := [][]models.InlineKeyboardButton{
+		{
+			{
+				Text:         "👤 Edit Name",
+				CallbackData: "profile_change_name",
+			},
+			{
+				Text:         "📞 Edit Phone",
+				CallbackData: "profile_change_phone",
+			},
+			{
+				Text:         "🌐 Edit Language",
+				CallbackData: "profile_change_language",
+			},
+		},
+		{
+			{
+				Text:         "📍 Edit Address",
+				CallbackData: "profile_change_address",
+			},
+			{
+				Text:         "📏 Toggle Units",
+				CallbackData: "profile_change_units",
+			},
+		},
+	}
+	kb := &models.InlineKeyboardMarkup{
+		InlineKeyboard: btns,
+	}
+	return *kb
+}
+
