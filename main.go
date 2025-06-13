@@ -63,7 +63,11 @@ func main() {
 			bot.MatchTypePrefix,
 			shareLocationHandler,
 		),
-		bot.WithCallbackQueryDataHandler("manual_location", bot.MatchTypeExact, locationHandler),
+		bot.WithCallbackQueryDataHandler(
+			"manual_location:",
+			bot.MatchTypePrefix,
+			manualLocationHandler,
+		),
 
 		// default handler
 		bot.WithDefaultHandler(defaultHandler),
@@ -176,6 +180,14 @@ func defaultHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		// ignore for now
 		return
 	}
+	user, err := pers.GetUser(update.Message.From.ID)
+	if err != nil {
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   "Error getting user information. Please try again later.",
+		})
+		return
+	}
 	switch userStates[update.Message.From.ID].ActiveCommand {
 	case "waiting_for_location":
 		if update.Message.Location != nil {
@@ -192,14 +204,6 @@ func defaultHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 			}
 
 			// update user location
-			user, err := pers.GetUser(update.Message.From.ID)
-			if err != nil {
-				b.SendMessage(ctx, &bot.SendMessageParams{
-					ChatID: update.Message.Chat.ID,
-					Text:   "Error getting user information. Please try again later.",
-				})
-				return
-			}
 			user.City = locationInfo.City
 			user.Country = locationInfo.Country
 			err = pers.UpdateUser(user)
@@ -228,6 +232,23 @@ func defaultHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 			return
 
 		}
+	case "waiting_for_city":
+		user.City = update.Message.Text
+		pers.UpdateUser(user)
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.CallbackQuery.Message.Message.Chat.ID,
+			Text:   "Please enter your country:",
+		})
+		userStates[user.ID].ActiveCommand = "waiting_for_country"
+	case "waiting_for_country":
+		user.Country = update.Message.Text
+		pers.UpdateUser(user)
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.CallbackQuery.Message.Message.Chat.ID,
+			Text:   "Please choose your preferred units:",
+		})
+		userStates[user.ID].ActiveCommand = "waiting_for_units"
+
 	}
 }
 
@@ -440,9 +461,28 @@ func weatherHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		return
 	}
 	w := GetWeatherInfo(user.City, user.Country, user.Units)
+	if w == nil {
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   "No weather data found for city",
+		})
+		return
+	}
 
-	weathernReport := fmt.Sprintf(
-		"Temperature: %s\nFeels Like: %s\nUV Index: %s\nWind: %s\nPrecipitation: %s\nHumidity: %s\nPressure: %s\nClouds: %s\nVisibility: %s\nCity: %s\nCountry: %s\nUnits: %s",
+	weathernReport := fmt.Sprintf(`
+🌡️ *Temperature:* %s
+😎 *Feels Like:* %s
+☀️ *UV Index:* %s
+🌬️ *Wind:* %s
+🌧️ *Precipitation:* %s
+💧 *Humidity:* %s
+ barometer: *Pressure:* %s
+☁️ *Clouds:* %s
+👁️ *Visibility:* %s
+🏙️ *City:* %s
+🗺️ *Country:* %s
+⚙️ *Units:* %s
+`,
 		w.Temp,
 		w.FeelsLike,
 		w.UVIndex,
@@ -457,8 +497,9 @@ func weatherHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		w.Units,
 	)
 	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: update.Message.Chat.ID,
-		Text:   weathernReport,
+		ChatID:    update.Message.Chat.ID,
+		Text:      weathernReport,
+		ParseMode: models.ParseModeMarkdownV1,
 	})
 }
 

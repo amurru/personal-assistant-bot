@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -62,6 +63,10 @@ func GetWeatherInfo(city, country, units string) *db.WeatherInfo {
 	json.Unmarshal(resBody, &weatherData)
 	// Populate weatherInfo struct based on units
 	var weatherInfo db.WeatherInfo
+	if len(weatherData.CurrentCondition) == 0 {
+		log.Println("No weather data found for city")
+		return nil
+	}
 	if units == "imperial" || units == "i" {
 		weatherInfo.Temp = weatherData.CurrentCondition[0].TempF
 		weatherInfo.FeelsLike = weatherData.CurrentCondition[0].FeelsLikeF

@@ -63,3 +63,31 @@ func shareLocationHandler(ctx context.Context, b *bot.Bot, update *models.Update
 	userStates[update.CallbackQuery.From.ID].PreviousMessageID = previousMessageID
 	userStates[update.CallbackQuery.From.ID].ActiveCommand = "waiting_for_location"
 }
+
+func manualLocationHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
+		CallbackQueryID: update.CallbackQuery.ID,
+		ShowAlert:       false,
+	})
+	b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: update.CallbackQuery.Message.Message.Chat.ID,
+		Text:   "Please enter your city:",
+	})
+	// Extract previous message id from manual_location:ID to use as reference
+	previousMessageID, err := strconv.Atoi(
+		strings.Split(update.CallbackQuery.Data, ":")[1], // share_location:msgid
+	)
+	if err != nil {
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.CallbackQuery.Message.Message.Chat.ID,
+			Text:   "Error occured. Contact developer!",
+		})
+		return
+	}
+	// Create user state record if not exists
+	if _, ok := userStates[update.CallbackQuery.From.ID]; !ok {
+		userStates[update.CallbackQuery.From.ID] = &db.UserStateInfo{}
+	}
+	userStates[update.CallbackQuery.From.ID].PreviousMessageID = previousMessageID
+	userStates[update.CallbackQuery.From.ID].ActiveCommand = "waiting_for_city"
+}

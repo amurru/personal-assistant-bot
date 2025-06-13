@@ -37,7 +37,7 @@ func RequestLocation(messageID int) models.InlineKeyboardMarkup {
 		{
 			{
 				Text:         "✏️ Manual Input",
-				CallbackData: "manual_location",
+				CallbackData: fmt.Sprintf("manual_location:%d", messageID),
 			},
 		},
 	}
