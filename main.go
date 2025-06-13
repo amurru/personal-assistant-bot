@@ -470,31 +470,65 @@ func weatherHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 	}
 
 	weathernReport := fmt.Sprintf(`
-🌡️ *Temperature:* %s
-😎 *Feels Like:* %s
+🌡️ *Temperature:* %s %s
+😎 *Feels Like:* %s %s
 ☀️ *UV Index:* %s
-🌬️ *Wind:* %s
-🌧️ *Precipitation:* %s
+🌬️ *Wind:* %s %s
+🌧️ *Precipitation:* %s %s
 💧 *Humidity:* %s
- barometer: *Pressure:* %s
+⏱  *Pressure:* %s %s
 ☁️ *Clouds:* %s
-👁️ *Visibility:* %s
+👁️ *Visibility:* %s %s
 🏙️ *City:* %s
 🗺️ *Country:* %s
-⚙️ *Units:* %s
 `,
 		w.Temp,
+		func() string {
+			if w.Units == "metric" {
+				return "°C"
+			}
+			return "°F"
+		}(),
 		w.FeelsLike,
+		func() string {
+			if w.Units == "metric" {
+				return "°C"
+			}
+			return "°F"
+		}(),
 		w.UVIndex,
 		w.Wind,
+		func() string {
+			if w.Units == "metric" {
+				return "m/s"
+			}
+			return "mph"
+		}(),
 		w.Precipitation,
+		func() string {
+			if w.Units == "metric" {
+				return "mm"
+			}
+			return "in"
+		}(),
 		w.Humidity,
 		w.Pressure,
+		func() string {
+			if w.Units == "metric" {
+				return "mbar"
+			}
+			return "inHg"
+		}(),
 		w.Clouds,
 		w.Visibility,
+		func() string {
+			if w.Units == "metric" {
+				return "km"
+			}
+			return "mi"
+		}(),
 		w.City,
 		w.Country,
-		w.Units,
 	)
 	b.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID:    update.Message.Chat.ID,
