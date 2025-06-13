@@ -169,5 +169,13 @@ func (s *Supabase) UpdateNote(note Note) error {
 
 // DeleteNote deletes a note
 func (s *Supabase) DeleteNote(note Note) error {
+	_, _, err := s.client.From("user_notes").
+		Delete("", "exact").
+		Eq("id", strconv.Itoa(note.ID)).
+		Execute()
+	if err != nil {
+		log.Printf("DeleteNote error: %v", err)
+		return err
+	}
 	return nil
 }

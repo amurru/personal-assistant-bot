@@ -47,3 +47,27 @@ func RequestLocation(messageID int) models.InlineKeyboardMarkup {
 
 	return *kb
 }
+
+func NotesActionButtons() models.InlineKeyboardMarkup {
+	btns := [][]models.InlineKeyboardButton{
+		{
+			{
+				Text:         "📋 Add",
+				CallbackData: "notes_add",
+			},
+			{
+				Text:         "📝 Edit",
+				CallbackData: "notes_edit",
+			},
+			{
+				Text:         "🗑️ Delete",
+				CallbackData: "notes_delete",
+			},
+		},
+	}
+	kb := &models.InlineKeyboardMarkup{
+		InlineKeyboard: btns,
+	}
+
+	return *kb
+}

@@ -69,6 +69,11 @@ func main() {
 			bot.MatchTypePrefix,
 			manualLocationHandler,
 		),
+		bot.WithCallbackQueryDataHandler(
+			"notes_",
+			bot.MatchTypePrefix,
+			notesActionHandler,
+		),
 
 		// default handler
 		bot.WithDefaultHandler(defaultHandler),
@@ -223,9 +228,10 @@ func defaultHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 
 			// FIX: message has not been deleted
 			// delete message requesting location
+			prevMsgId := userStates[user.ID].CommandArgument.(int)
 			b.DeleteMessage(ctx, &bot.DeleteMessageParams{
 				ChatID:    update.Message.Chat.ID,
-				MessageID: userStates[user.ID].PreviousMessageID,
+				MessageID: prevMsgId,
 			})
 
 			// remove user's state
@@ -250,6 +256,120 @@ func defaultHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		})
 		userStates[user.ID].ActiveCommand = "waiting_for_units"
 
+	case "waiting_for_note_delete_id":
+		notes, err := pers.GetUserNotes(user.ID)
+		if err != nil {
+			b.SendMessage(ctx, &bot.SendMessageParams{
+				ChatID: update.Message.Chat.ID,
+				Text:   "Error occured during operation. Please try again later.",
+			})
+			return
+		}
+		targetId, err := strconv.Atoi(update.Message.Text)
+		if err != nil {
+			b.SendMessage(ctx, &bot.SendMessageParams{
+				ChatID: update.Message.Chat.ID,
+				Text:   "Error occured during operation. Please try again later.",
+			})
+			return
+		}
+		targetId = targetId - 1
+		if targetId < 0 || targetId >= len(notes) {
+			b.SendMessage(ctx, &bot.SendMessageParams{
+				ChatID: update.Message.Chat.ID,
+				Text:   "No such note! Choose another one",
+			})
+			return
+		}
+		note := notes[targetId]
+		pers.DeleteNote(note)
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   "Note deleted! Check with /notes",
+		})
+
+		// remove user's state
+		delete(userStates, user.ID)
+
+	case "waiting_for_note_edit_id":
+		notes, err := pers.GetUserNotes(user.ID)
+		if err != nil {
+			b.SendMessage(ctx, &bot.SendMessageParams{
+				ChatID: update.Message.Chat.ID,
+				Text:   "Error occured during operation. Please try again later.",
+			})
+			return
+		}
+		targetId, err := strconv.Atoi(update.Message.Text)
+		if err != nil {
+			b.SendMessage(ctx, &bot.SendMessageParams{
+				ChatID: update.Message.Chat.ID,
+				Text:   "Error occured during operation. Please try again later.",
+			})
+			return
+		}
+		targetId = targetId - 1
+		if targetId < 0 || targetId >= len(notes) {
+			b.SendMessage(ctx, &bot.SendMessageParams{
+				ChatID: update.Message.Chat.ID,
+				Text:   "No such note! Choose another one",
+			})
+			return
+		}
+
+		// prompt user for new text
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   fmt.Sprintf("Please enter new note text for note #%s:",update.Message.Text),
+		})
+
+		// update user state
+		userStates[user.ID].ActiveCommand = "waiting_for_note_edit_text"
+		userStates[user.ID].CommandArgument = notes[targetId].ID
+
+	case "waiting_for_note_edit_text":
+		note:= db.Note{
+			ID:        userStates[user.ID].CommandArgument.(int),
+			Text:      update.Message.Text,
+			Owner:     user.ID,
+			CreatedAt: time.Now(),
+		}
+		err := pers.UpdateNote(note)
+		if err != nil {
+			b.SendMessage(ctx, &bot.SendMessageParams{
+				ChatID: update.Message.Chat.ID,
+				Text:   "Error occured during operation. Please try again.",
+			})
+			return
+		}
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   "Note updated! Check with /notes",
+		})
+
+		// remove user's state
+		delete(userStates, user.ID)
+
+	case "waiting_for_note_share_id":
+		// TODO: share note
+
+		// remove user's state
+		delete(userStates, user.ID)
+
+	case "waiting_for_note_add":
+		note := db.Note{
+			Text:      update.Message.Text,
+			Owner:     user.ID,
+			CreatedAt: time.Now(),
+		}
+		pers.AddNote(note)
+		b.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: update.Message.Chat.ID,
+			Text:   "Note saved! Check with /notes",
+		})
+
+		// remove user's state
+		delete(userStates, user.ID)
 	}
 }
 
@@ -578,8 +698,9 @@ func notesHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 		notesText += fmt.Sprintf("%d. %s\n\n", i+1, note.Text)
 	}
 	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: update.Message.Chat.ID,
-		Text:   "Your Notes:\n-------------\n\n" + notesText,
+		ChatID:      update.Message.Chat.ID,
+		Text:        "Your Notes:\n-------------\n\n" + notesText,
+		ReplyMarkup: NotesActionButtons(),
 	})
 }
 
